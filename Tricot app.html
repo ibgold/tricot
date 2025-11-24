@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#121212">
+    <title>Compteur Tricot Master</title>
+    <style>
+        /* --- CONFIGURATION DE BASE & THEME SOMBRE --- */
+        :root {
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --surface-light: #2c2c2c;
+            --primary: #bb86fc; /* Violet doux */
+            --secondary: #03dac6; /* Turquoise */
+            --alert: #cf6679; /* Rouge doux */
+            --text: #ffffff;
+            --text-dim: #b0b0b0;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none; /* Empêche la sélection de texte accidentelle */
+        }
+
+        /* --- NAVIGATION ENTRE ECRANS --- */
+        .screen {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+            padding: 15px;
+        }
+        .screen.active { display: flex; }
+
+        /* --- TYPOGRAPHIE & BOUTONS --- */
+        h1, h2, h3 { margin: 0; font-weight: 600; }
+        
+        button {
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        button:active { transform: scale(0.96); }
+        
+        .btn-primary { background: var(--primary); color: #000; padding: 15px; }
+        .btn-secondary { background: var(--surface-light); color: var(--primary); padding: 10px 15px; }
+        .btn-danger { background: rgba(207, 102, 121, 0.2); color: var(--alert); padding: 10px; }
+        .btn-icon { background: none; font-size: 1.5rem; padding: 5px; }
+
+        /* --- ECRAN ACCUEIL (LISTE) --- */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 20px; border-bottom: 1px solid var(--surface-light);
+            margin-bottom: 15px;
+        }
+        
+        #project-list {
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
+        }
+        
+        .project-card {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            border-left: 5px solid var(--surface);
+        }
+        .project-card.active-card { border-left-color: var(--secondary); }
+        
+        .card-info h3 { font-size: 1.3rem; margin-bottom: 5px; }
+        .card-info span { color: var(--text-dim); font-size: 0.9rem; }
+        .card-count { font-size: 2rem; font-weight: bold; color: var(--primary); margin-right: 15px; }
+
+        /* --- ECRAN COMPTEUR (PRINCIPAL) --- */
+        .counter-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        /* Le Cerveau Central (Gros Bouton) */
+        #main-click-zone {
+            flex: 2; /* Prend le max de place */
+            background: var(--surface);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 20px rgba(187, 134, 252, 0.15);
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Effet visuel au clic */
+        #main-click-zone:active { background: #252525; border-color: #fff; }
+        
+        #counter-display { font-size: 7rem; font-weight: 700; line-height: 1; }
+        #counter-label { text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); margin-top: 10px; }
+        
+        /* Zone des Satellites (Règles) */
+        #satellites-area {
+            flex: 1.5; /* Prend un peu moins de place que le compteur */
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 5px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 16px;
+        }
+        
+        .satellite-row {
+            background: var(--surface-light);
+            border-radius: 10px;
+            padding: 10px 15px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 50px;
+        }
+        
+        /* Barre de progression visuelle */
+        .progress-bar-bg {
+            position: absolute; top: 0; bottom: 0; left: 0;
+            background: var(--secondary);
+            opacity: 0.2;
+            z-index: 0;
+            transition: width 0.3s ease;
+        }
+        .progress-bar-bg.warning { background: #ff9800; opacity: 0.4; } /* Proche */
+        .progress-bar-bg.alert { background: var(--primary); opacity: 0.6; } /* Atteint */
+
+        .satellite-content { position: relative; z-index: 1; display: flex; width: 100%; justify-content: space-between; align-items: center; }
+        .rule-name { font-weight: 600; font-size: 1rem; }
+        .rule-status { font-family: monospace; font-size: 1.1rem; background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px;}
+
+        .bottom-controls {
+            display: flex; gap: 10px; margin-top: 10px;
+        }
+        .bottom-controls button { flex: 1; padding: 15px; }
+
+        /* --- MODALS & POPUPS --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-box {
+            background: var(--surface);
+            width: 100%; max-width: 400px;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid var(--surface-light);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Inputs de formulaire */
+        label { display: block; margin-top: 15px; margin-bottom: 5px; color: var(--text-dim); }
+        input, select {
+            width: 100%; background: var(--bg); border: 1px solid var(--surface-light);
+            color: white; padding: 12px; border-radius: 8px; font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        input:focus { outline: none; border-color: var(--primary); }
+
+        /* GROSSE ALERTE */
+        #flash-alert {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--primary);
+            color: black;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            text-align: center;
+            padding: 20px;
+        }
+        #flash-alert h1 { font-size: 4rem; margin-bottom: 20px; animation: pulse 1s infinite; }
+        #flash-message { font-size: 2rem; font-weight: bold; margin-bottom: 50px; line-height: 1.4; }
+        #flash-btn { background: black; color: white; font-size: 1.5rem; padding: 20px 60px; border-radius: 50px; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+    <!-- ECRAN 1 : LISTE DES PROJETS -->
+    <div id="screen-home" class="screen active">
+        <header>
+            <h1>Mes Tricots</h1>
+            <button class="btn-primary" onclick="openModal('modal-project')" style="width: auto; padding: 10px 20px;">+ Créer</button>
+        </header>
+        
+        <div id="project-list">
+            <!-- Liste générée par JS -->
+        </div>
+    </div>
+
+    <!-- ECRAN 2 : COMPTEUR ACTIF -->
+    <div id="screen-counter" class="screen">
+        <div class="counter-header">
+            <button class="btn-secondary" onclick="goHome()">← Retour</button>
+            <h2 id="active-project-title" style="font-size: 1.1rem;">Projet</h2>
+            <button class="btn-secondary" onclick="openModal('modal-rule')">⚙️ Config</button>
+        </div>
+
+        <!-- ZONE CLIQUABLE PRINCIPALE -->
+        <div id="main-click-zone" onclick="increment()">
+            <div id="counter-display">0</div>
+            <div id="counter-label">Rang</div>
+        </div>
+
+        <!-- BARRES DE PROGRESSION (SATELLITES) -->
+        <div id="satellites-area">
+            <!-- Règles générées par JS -->
+            <div style="text-align:center; color:var(--text-dim); padding:20px;">
+                Pas de règles spéciales.<br>
+                Appuyez sur ⚙️ pour ajouter<br>
+                (ex: Torsade tous les 6 rangs)
+            </div>
+        </div>
+
+        <div class="bottom-controls">
+            <button class="btn-danger" onclick="decrement()">-1 Erreur</button>
+            <button class="btn-secondary" onclick="duplicateCurrentProject()">Copier (Symétrie)</button>
+        </div>
+    </div>
+
+    <!-- MODAL : NOUVEAU PROJET -->
+    <div id="modal-project" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Nouveau Projet</h3>
+            <label>Nom du projet</label>
+            <input type="text" id="input-project-name" placeholder="Ex: Manche Gauche">
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn-secondary" style="flex:1" onclick="closeModals()">Annuler</button>
+                <button class="btn-primary" style="flex:1" onclick="createProject()">Créer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL : NOUVELLE REGLE -->
+    <div id="modal-rule" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin-bottom:15px;">Ajouter une Action</h3>
+            
+            <label>Type</label>
+            <select id="input-rule-type">
+                <option value="modulo">Répétition (Tous les X rangs)</option>
+                <option value="target">Objectif (Au rang X)</option>
+            </select>
+
+            <label>Nombre (X)</label>
+            <input type="number" id="input-rule-val" inputmode="numeric" placeholder="ex: 6">
+
+            <label>Nom de l'action</label>
+            <input type="text" id="input-rule-name" placeholder="ex: Torsade, Diminution">
+
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn-danger" style="flex:1" onclick="closeModals()">Fermer</button>
+                <button class="btn-primary" style="flex:1" onclick="addRule()">Ajouter</button>
+            </div>
+            
+            <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
+                <p style="font-size:0.9rem; color:var(--text-dim);">Règles actuelles :</p>
+                <div id="rules-list-edit" style="max-height:100px; overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLASH ALERT OVERLAY -->
+    <div id="flash-alert" onclick="closeAlert()">
+        <h1>STOP !</h1>
+        <div id="flash-message">Action Requise</div>
+        <button id="flash-btn">C'est fait !</button>
+    </div>
+
+    <script>
+        // --- ETAT DE L'APPLICATION ---
+        let projects = JSON.parse(localStorage.getItem('knitMasterDB')) || [];
+        let currentId = null;
+
+        // --- FONCTIONS SYSTEME ---
+        function save() {
+            localStorage.setItem('knitMasterDB', JSON.stringify(projects));
+            renderHome();
+        }
+
+        // Empêcher l'écran de s'éteindre (Si supporté)
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.log('Wake Lock non supporté');
+            }
+        }
+
+        // Vibration
+        function vibrate(pattern) {
+            if (navigator.vibrate) navigator.vibrate(pattern);
+        }
+
+        // --- NAVIGATION ---
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+            if(id === 'modal-rule') renderRulesEditor();
+        }
+        function closeModals() {
+            document.querySelectorAll('.modal-overlay').forEach(el => el.style.display = 'none');
+        }
+        function goHome() {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.getElementById('screen-home').classList.add('active');
+            currentId = null;
+            renderHome();
+        }
+
+        // --- GESTION PROJETS ---
+        function createProject() {
+            const name = document.getElementById('input-project-name').value.trim();
+            if(!name) return;
+            
+            const newProject = {
+                id: Date.now(),
+                name: name,
+                rows: 0,
+                rules: []
+            };
+            projects.push(newProject);
+            save();
+            document.getElementById('input-project-name').value = '';
+            closeModals();
+            openProject(newProject.id);
+        }
+
+        function duplicateCurrentProject() {
+            const p = projects.find(x => x.id === currentId);
+            if(!p) return;
+            
+            if(confirm("Créer une copie pour la symétrie ? (Le compteur repartira à 0, mais les règles seront conservées)")) {
+                const copy = {
+                    id: Date.now(),
+                    name: p.name + " (Suite)",
+                    rows: 0,
+                    rules: JSON.parse(JSON.stringify(p.rules))
+                };
+                projects.push(copy);
+                save();
+                openProject(copy.id);
+            }
+        }
+
+        function deleteProject(e, id) {
+            e.stopPropagation();
+            if(confirm("Supprimer ce projet ?")) {
+                projects = projects.filter(p => p.id !== id);
+                save();
+            }
+        }
+
+        function openProject(id) {
+            currentId = id;
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.getElementById('screen-counter').classList.add('active');
+            requestWakeLock(); // Garder écran allumé
+            renderCounter();
+        }
+
+        // --- MOTEUR DE RENDU ---
+        function renderHome() {
+            const container = document.getElementById('project-list');
+            container.innerHTML = '';
+            
+            if(projects.length === 0) {
+                container.innerHTML = `<div style="text-align:center; margin-top:50px; color:var(--text-dim)">Aucun projet.<br>Commencez par en créer un !</div>`;
+                return;
+            }
+
+            projects.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'project-card';
+                div.onclick = () => openProject(p.id);
+                div.innerHTML = `
+                    <div class="card-info">
+                        <h3>${p.name}</h3>
+                        <span>${p.rules.length} actions configurées</span>
+                    </div>
+                    <div style="display:flex; align-items:center">
+                        <span class="card-count">${p.rows}</span>
+                        <button class="btn-icon" style="color:var(--alert)" onclick="deleteProject(event, ${p.id})">🗑️</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderCounter() {
+            const p = projects.find(x => x.id === currentId);
+            if(!p) return;
+
+            document.getElementById('active-project-title').textContent = p.name;
+            document.getElementById('counter-display').textContent = p.rows;
+
+            // Rendu des règles (Satellites)
+            const satContainer = document.getElementById('satellites-area');
+            satContainer.innerHTML = '';
+            
+            if(p.rules.length === 0) {
+                satContainer.innerHTML = `<div style="text-align:center; color:var(--text-dim); padding:20px; font-size:0.9rem">Appuyez sur ⚙️ pour configurer<br>vos torsades et augmentations.</div>`;
+            }
+
+            p.rules.forEach(rule => {
+                let percentage = 0;
+                let statusText = "";
+                let isAlert = false;
+                let isNear = false;
+
+                if(rule.type === 'modulo') {
+                    // Logique Répétition
+                    const mod = p.rows % rule.val;
+                    // Cas spécial : si on vient de faire l'action (mod 0), la barre est vide pour le rang suivant, sauf si rang 0
+                    percentage = (mod === 0 && p.rows > 0) ? 100 : (mod / rule.val * 100);
+                    if(p.rows === 0) percentage = 0;
+                    
+                    statusText = (mod === 0 && p.rows > 0) ? "ACTION !" : `${mod}/${rule.val}`;
+                    if(mod === 0 && p.rows > 0) isAlert = true;
+                    if(mod === rule.val - 1) isNear = true;
+
+                } else {
+                    // Logique Objectif
+                    percentage = Math.min(100, (p.rows / rule.val * 100));
+                    const remaining = rule.val - p.rows;
+                    
+                    if(remaining <= 0) {
+                        statusText = "TERMINÉ";
+                        isAlert = true;
+                    } else {
+                        statusText = `Reste: ${remaining}`;
+                        if(remaining <= 2) isNear = true;
+                    }
+                }
+
+                // Création HTML
+                const div = document.createElement('div');
+                div.className = 'satellite-row';
+                
+                let bgClass = 'progress-bar-bg';
+                if(isAlert) bgClass += ' alert';
+                else if(isNear) bgClass += ' warning';
+
+                div.innerHTML = `
+                    <div class="${bgClass}" style="width: ${percentage}%"></div>
+                    <div class="satellite-content">
+                        <span class="rule-name">${rule.name}</span>
+                        <span class="rule-status">${statusText}</span>
+                    </div>
+                `;
+                satContainer.appendChild(div);
+            });
+        }
+
+        function renderRulesEditor() {
+            const p = projects.find(x => x.id === currentId);
+            const list = document.getElementById('rules-list-edit');
+            list.innerHTML = '';
+            p.rules.forEach((r, idx) => {
+                const d = document.createElement('div');
+                d.style.display = "flex";
+                d.style.justifyContent = "space-between";
+                d.style.padding = "5px 0";
+                d.innerHTML = `<span>${r.name} (${r.type === 'modulo' ? 'Tous les ' : 'Rang '}${r.val})</span> <button style="color:red; background:none" onclick="removeRule(${idx})">x</button>`;
+                list.appendChild(d);
+            });
+        }
+
+        // --- LOGIQUE METIER ---
+        function addRule() {
+            const p = projects.find(x => x.id === currentId);
+            const type = document.getElementById('input-rule-type').value;
+            const val = parseInt(document.getElementById('input-rule-val').value);
+            const name = document.getElementById('input-rule-name').value;
+
+            if(val && name) {
+                p.rules.push({ type, val, name });
+                save();
+                renderRulesEditor();
+                renderCounter(); // maj background
+                // Clean inputs
+                document.getElementById('input-rule-name').value = '';
+                document.getElementById('input-rule-val').value = '';
+            }
+        }
+
+        function removeRule(idx) {
+            const p = projects.find(x => x.id === currentId);
+            p.rules.splice(idx, 1);
+            save();
+            renderRulesEditor();
+            renderCounter();
+        }
+
+        function increment() {
+            const p = projects.find(x => x.id === currentId);
+            if(!p) return;
+            
+            p.rows++;
+            save();
+            renderCounter();
+            
+            // Vérification des alertes
+            let triggerAlerts = [];
+            p.rules.forEach(r => {
+                if(r.type === 'modulo') {
+                    if(p.rows > 0 && p.rows % r.val === 0) triggerAlerts.push(r.name);
+                } else if (r.type === 'target') {
+                    if(p.rows === r.val) triggerAlerts.push("Fin : " + r.name);
+                }
+            });
+
+            if(triggerAlerts.length > 0) {
+                vibrate([200, 100, 200, 100, 500]);
+                showAlert(triggerAlerts.join(" + "));
+            } else {
+                // Petit retour haptique simple
+                vibrate(50);
+            }
+        }
+
+        function decrement() {
+            const p = projects.find(x => x.id === currentId);
+            if(!p || p.rows === 0) return;
+            p.rows--;
+            save();
+            renderCounter();
+        }
+
+        function showAlert(msg) {
+            const el = document.getElementById('flash-alert');
+            document.getElementById('flash-message').textContent = msg;
+            el.style.display = 'flex';
+        }
+
+        function closeAlert() {
+            document.getElementById('flash-alert').style.display = 'none';
+        }
+
+        // Init
+        renderHome();
+
+    </script>
+</body>
+</html>
