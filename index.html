@@ -30,10 +30,10 @@
             --radius-sm: 12px;
             
             /* COULEURS DES BARRES */
-            --bar-fill: linear-gradient(90deg, #8E2DE2, #4A00E0);
+            --bar-fill: linear-gradient(90deg, #8E2DE2, #4A00E0); /* Violet profond */
             
-            /* LE VRAI DORÉ */
-            --bar-action: linear-gradient(135deg, #d4af37 0%, #edc967 50%, #d4af37 100%);
+            /* LE VRAI DORÉ (Fini le jaune pisse !) */
+            --bar-action: linear-gradient(135deg, #d4af37 0%, #edc967 50%, #d4af37 100%); /* Or Métallique */
             --gold-glow: rgba(212, 175, 55, 0.5);
         }
 
@@ -53,8 +53,6 @@
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(0.95); } 100% { transform: scale(1); } }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* --- STRUCTURE --- */
         .screen { 
@@ -86,10 +84,11 @@
         .btn-secondary { 
             background: var(--glass); border: 1px solid var(--glass-border); color: var(--primary); padding: 12px 16px; 
         }
+        /* Nouveau bouton neutre pour la correction */
         .btn-neutral { 
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-dim); padding: 12px; 
         }
-        .btn-danger {
+        .btn-danger { /* Gardé pour la suppression de projet uniquement */
             background: rgba(207, 102, 121, 0.15); border: 1px solid rgba(207, 102, 121, 0.3); color: var(--alert); padding: 12px; 
         }
         
@@ -148,11 +147,13 @@
             border: 1px solid var(--glass-border);
             flex-shrink: 0;
         }
+        /* CHANGEMENT : Barres violettes douces par défaut */
         .progress-bar-bg { 
             position: absolute; top: 0; bottom: 0; left: 0; 
             background: var(--bar-fill); 
             opacity: 0.4; z-index: 0; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
         }
+        /* CHANGEMENT : Barres dorées effet luxe pour l'alerte */
         .progress-bar-bg.alert { 
             background: var(--bar-action); 
             opacity: 0.9; 
@@ -174,6 +175,7 @@
             z-index: 9999; transition: all 0.3s; 
             box-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
+        /* Indicateur de statut avec le même doré */
         #sync-status.syncing { background: #D4AF37; box-shadow: 0 0 10px #D4AF37; border-color: #fff; animation: pulse 1s infinite; }
         #sync-status.synced { background: #27ae60; box-shadow: 0 0 10px #27ae60; border-color: #fff; }
         #sync-status.error { background: #eb5757; border-color: white; }
@@ -213,6 +215,7 @@
         
         #flash-alert { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            /* UTILISATION DU VIOLET SOMBRE DEMANDE: #4a006a */
             background: linear-gradient(135deg, #4a006a, #2a0040); 
             backdrop-filter: blur(5px);
             color: white; 
@@ -221,8 +224,9 @@
         }
         #flash-message { font-size: 3rem; font-weight: 800; margin-bottom: 40px; line-height: 1.2; }
         
+        /* Style du bouton dans l'alerte pour qu'il ressorte sur le violet foncé */
         #flash-btn { 
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.2); /* Verre givré blanc */
             color: white; 
             border: 1px solid rgba(255,255,255,0.4);
             padding: 20px 50px; border-radius: 40px; font-size: 1.2rem;
@@ -296,66 +300,22 @@
         <div id="satellites-area"></div>
         
         <div style="display: flex; gap: 15px; margin-top: 20px; flex-shrink: 0;">
+            <!-- Changement ici : Bouton Neutre (Gomme) au lieu de Danger -->
             <button class="btn-neutral" style="flex:1" onclick="decrement()">-1 (Correction)</button>
             <button class="btn-secondary" style="flex:1" onclick="openDuplicateModal()">👯 Symétrie</button>
         </div>
     </div>
 
     <!-- MODALS -->
-    <div id="modal-create-folder" class="modal-overlay">
-        <div class="modal-box">
-            <h3 style="margin-bottom:5px">Nouveau Projet</h3>
-            <p style="opacity:0.6; font-size:0.9rem; margin-bottom:20px">Ex: Pull Irlandais, Echarpe...</p>
-            <input type="text" id="input-folder-name" placeholder="Nom du projet...">
-            <div style="display:flex; gap:10px;">
-                <button class="btn-secondary" style="flex:1" onclick="closeModals()">Annuler</button>
-                <button class="btn-primary" style="flex:1" onclick="createFolder()">Créer</button>
-            </div>
-        </div>
-    </div>
+    <div id="modal-create-folder" class="modal-overlay"><div class="modal-box"><h3 style="margin-bottom:5px">Nouveau Projet</h3><p style="opacity:0.6; font-size:0.9rem; margin-bottom:20px">Ex: Pull Irlandais, Echarpe...</p><input type="text" id="input-folder-name" placeholder="Nom du projet..."><div style="display:flex; gap:10px;"><button class="btn-secondary" style="flex:1" onclick="closeModals()">Annuler</button><button class="btn-primary" style="flex:1" onclick="createFolder()">Créer</button></div></div></div>
     
-    <div id="modal-create-part" class="modal-overlay">
-        <div class="modal-box">
-            <h3>Ajouter un morceau</h3>
-            <input type="text" id="input-part-name" placeholder="Ex: Manche Gauche">
-            <div style="display:flex; gap:10px;">
-                <button class="btn-secondary" style="flex:1" onclick="closeModals()">Annuler</button>
-                <button class="btn-primary" style="flex:1" onclick="createPart()">Ajouter</button>
-            </div>
-        </div>
-    </div>
+    <div id="modal-create-part" class="modal-overlay"><div class="modal-box"><h3>Ajouter un morceau</h3><input type="text" id="input-part-name" placeholder="Ex: Manche Gauche"><div style="display:flex; gap:10px;"><button class="btn-secondary" style="flex:1" onclick="closeModals()">Annuler</button><button class="btn-primary" style="flex:1" onclick="createPart()">Ajouter</button></div></div></div>
     
-    <div id="modal-duplicate-part" class="modal-overlay">
-        <div class="modal-box">
-            <h3>Symétrie</h3>
-            <p style="color:var(--text-dim); font-size:0.9rem; margin: 10px 0 20px 0; line-height:1.5">Crée une copie parfaite des règles pour l'autre côté, avec le compteur à zéro.</p>
-            <input type="text" id="input-duplicate-name">
-            <div style="display:flex; gap:10px;">
-                <button class="btn-secondary" style="flex:1" onclick="closeModals()">Annuler</button>
-                <button class="btn-primary" style="flex:1" onclick="executeDuplication()">Valider</button>
-            </div>
-        </div>
-    </div>
+    <div id="modal-duplicate-part" class="modal-overlay"><div class="modal-box"><h3>Symétrie</h3><p style="color:var(--text-dim); font-size:0.9rem; margin: 10px 0 20px 0; line-height:1.5">Crée une copie parfaite des règles pour l'autre côté, avec le compteur à zéro.</p><input type="text" id="input-duplicate-name"><div style="display:flex; gap:10px;"><button class="btn-secondary" style="flex:1" onclick="closeModals()">Annuler</button><button class="btn-primary" style="flex:1" onclick="executeDuplication()">Valider</button></div></div></div>
     
-    <div id="modal-rule" class="modal-overlay">
-        <div class="modal-box">
-            <h3>Ajouter Règle</h3>
-            <select id="input-rule-type">
-                <option value="modulo">Répétition (Tous les X rangs)</option>
-                <option value="target">Objectif (Au rang X)</option>
-            </select>
-            <input type="number" id="input-rule-val" placeholder="Nombre (ex: 6)">
-            <input type="text" id="input-rule-name" placeholder="Nom (ex: Torsade)">
-            <button class="btn-primary" style="width:100%" onclick="addRule()">Ajouter la règle</button>
-            <div style="border-top:1px solid var(--glass-border); margin-top:20px; padding-top:15px; max-height:150px; overflow-y:auto;" id="rules-list-preview"></div>
-            <button class="btn-secondary" style="width:100%; margin-top:10px" onclick="closeModals()">Fermer</button>
-        </div>
-    </div>
+    <div id="modal-rule" class="modal-overlay"><div class="modal-box"><h3>Ajouter Règle</h3><select id="input-rule-type"><option value="modulo">Répétition (Tous les X rangs)</option><option value="target">Objectif (Au rang X)</option></select><input type="number" id="input-rule-val" placeholder="Nombre (ex: 6)"><input type="text" id="input-rule-name" placeholder="Nom (ex: Torsade)"><button class="btn-primary" style="width:100%" onclick="addRule()">Ajouter la règle</button><div style="border-top:1px solid var(--glass-border); margin-top:20px; padding-top:15px; max-height:150px; overflow-y:auto;" id="rules-list-preview"></div><button class="btn-secondary" style="width:100%; margin-top:10px" onclick="closeModals()">Fermer</button></div></div>
     
-    <div id="flash-alert" onclick="this.style.display='none'">
-        <div id="flash-message">ALERTE</div>
-        <button id="flash-btn">C'est noté !</button>
-    </div>
+    <div id="flash-alert" onclick="this.style.display='none'"><div id="flash-message">ALERTE</div><button id="flash-btn">C'est noté !</button></div>
     
     <div id="toast">Info</div>
 
@@ -363,56 +323,11 @@
     // --- CONFIGURATION ---
     const API_URL = "https://script.google.com/macros/s/AKfycbwO5NXC4tNO2oHi-q_zawF9kNu1b1TOym2jU4ifp6KK9T0rnR2AW2ivk0BR6KGVKSoT/exec";
 
-    let data = [];
-    let activeFolderId = null;
-    let activePartId = null;
-    let saveTimeout = null;
+    let data = []; let activeFolderId = null; let activePartId = null; let saveTimeout = null;
 
-    // --- UTILITAIRES ---
-    function setSyncStatus(status) {
-        document.getElementById('sync-status').className = status;
-    }
+    function setSyncStatus(status) { document.getElementById('sync-status').className = status; }
 
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2500);
-    }
-
-    function openModal(id) {
-        const m = document.getElementById(id);
-        m.style.display = 'flex';
-        if (id === 'modal-rule') renderRulesPreview();
-    }
-
-    function closeModals() {
-        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-    }
-
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-
-    function generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-    }
-
-    // --- NAVIGATION ---
-    function goHome() {
-        activeFolderId = null;
-        activePartId = null;
-        showScreen('screen-home');
-    }
-
-    function goBackToFolder() {
-        activePartId = null;
-        showScreen('screen-folder');
-        renderParts();
-    }
-
-    // --- FETCH & SAVE ---
+    // --- ENGINE ROBUSTE ---
     async function fetchData() {
         setSyncStatus('syncing');
         const loadMsg = document.getElementById('loading-msg');
@@ -428,7 +343,7 @@
             const text = await res.text();
             try {
                 const json = JSON.parse(text);
-                data = json;
+                data = json; 
                 setSyncStatus('synced');
                 loadMsg.style.display = 'none';
                 renderFolders();
@@ -437,338 +352,145 @@
                 throw new Error("PERMISSION_DENIED");
             }
         } catch (e) {
-            console.error(e);
-            setSyncStatus('error');
-            loadMsg.style.display = 'none';
-            errBox.style.display = 'block';
+            console.error(e); setSyncStatus('error');
+            loadMsg.style.display = 'none'; errBox.style.display = 'block';
             if (e.message === "PERMISSION_DENIED" || e.message.includes("Unexpected token")) {
                 document.getElementById('error-title').textContent = "🔒 Accès Refusé";
-                document.getElementById('error-desc').innerHTML = "Le script Google doit être accessible à <b>'Tout le monde'</b>. Vérifiez les autorisations de déploiement.";
+                document.getElementById('error-desc').innerHTML = "Le script Google doit être accessible à <b>'Tout le monde'</b>.";
             } else {
-                document.getElementById('error-title').textContent = "📡 Hors ligne";
-                document.getElementById('error-desc').textContent = "Impossible de joindre le serveur. Vérifiez votre connexion.";
+                document.getElementById('error-title').textContent = "📡 Erreur Connexion";
+                document.getElementById('error-desc').textContent = "Vérifiez votre internet.";
             }
         }
     }
 
     function scheduleSave() {
         setSyncStatus('syncing');
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(saveData, 1200);
+        if (saveTimeout) clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(async () => {
+            try {
+                await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(data) });
+                setSyncStatus('synced');
+            } catch (e) { setSyncStatus('error'); }
+        }, 1500);
     }
 
-    async function saveData() {
-        try {
-            const res = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify(data)
-            });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            setSyncStatus('synced');
-        } catch (e) {
-            console.error("Erreur de sauvegarde:", e);
-            setSyncStatus('error');
-            showToast("⚠️ Erreur de sauvegarde");
-        }
-    }
+    // --- NAVIGATION ---
+    function switchScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; if(id==='modal-rule') renderRulesList(); }
+    function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
+    function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
+    function vibrate(p) { if(navigator.vibrate) navigator.vibrate(p); }
 
-    // --- GETTERS ---
-    function getActiveFolder() {
-        return data.find(f => f.id === activeFolderId);
-    }
-
-    function getActivePart() {
-        const folder = getActiveFolder();
-        return folder ? folder.parts.find(p => p.id === activePartId) : null;
-    }
-
-    // --- RENDER FOLDERS ---
+    // --- LOGIQUE ---
     function renderFolders() {
-        const list = document.getElementById('folders-list');
-        list.innerHTML = '';
-        if (!data || data.length === 0) {
-            list.innerHTML = '<div style="text-align:center; opacity:0.4; padding:40px 0; font-size:0.95rem;">Aucun projet<br><span style="font-size:0.8rem">Appuyez sur + pour commencer</span></div>';
-            return;
-        }
-        data.forEach(folder => {
-            const card = document.createElement('div');
-            card.className = 'folder-card';
-            const partCount = folder.parts ? folder.parts.length : 0;
-            card.innerHTML = `
-                <div class="folder-info" style="flex:1; cursor:pointer" onclick="openFolder('${folder.id}')">
-                    <h3>${folder.name}</h3>
-                    <span>${partCount} morceau${partCount !== 1 ? 'x' : ''}</span>
-                </div>
-                <button class="btn-danger" style="width:36px; height:36px; padding:0; font-size:1rem; margin-left:10px;" onclick="deleteFolder('${folder.id}')">🗑</button>
-            `;
-            list.appendChild(card);
+        const list = document.getElementById('folders-list'); list.innerHTML = '';
+        if(data.length === 0) list.innerHTML = '<div style="text-align:center; opacity:0.5; margin-top:40px">✨ Aucun projet.<br>Commencez par en créer un !</div>';
+        data.forEach(f => {
+            const div = document.createElement('div'); div.className = 'folder-card';
+            div.innerHTML = `<div class="folder-info"><h3>${f.name}</h3><span>${f.parts.length} morceaux</span></div><div style="opacity:0.5; font-size:1.2rem">›</div>`;
+            div.onclick = () => openFolder(f.id); list.appendChild(div);
         });
     }
-
-    // --- FOLDER ACTIONS ---
-    function openFolder(folderId) {
-        activeFolderId = folderId;
-        const folder = getActiveFolder();
-        document.getElementById('folder-title-display').textContent = folder.name;
-        showScreen('screen-folder');
-        renderParts();
-    }
-
     function createFolder() {
-        const name = document.getElementById('input-folder-name').value.trim();
-        if (!name) { showToast("Entrez un nom de projet"); return; }
-        const newFolder = { id: generateId(), name, parts: [] };
-        data.push(newFolder);
-        document.getElementById('input-folder-name').value = '';
-        closeModals();
-        renderFolders();
-        scheduleSave();
-        showToast(`✅ "${name}" créé`);
+        const name = document.getElementById('input-folder-name').value.trim(); if(!name) return;
+        data.push({ id: "f_"+Date.now(), name: name, parts: [] });
+        scheduleSave(); renderFolders(); closeModals(); document.getElementById('input-folder-name').value='';
     }
-
-    function deleteFolder(folderId) {
-        const folder = data.find(f => f.id === folderId);
-        if (!folder) return;
-        if (!confirm(`Supprimer "${folder.name}" et tous ses morceaux ?`)) return;
-        data = data.filter(f => f.id !== folderId);
-        renderFolders();
-        scheduleSave();
-        showToast("🗑 Projet supprimé");
+    function openFolder(id) {
+        activeFolderId = id; let folder = data.find(f => f.id === id); if(!folder) return switchScreen('screen-home');
+        document.getElementById('folder-title-display').textContent = folder.name; renderParts(); switchScreen('screen-folder');
     }
-
-    // --- RENDER PARTS ---
+    function goHome() { switchScreen('screen-home'); renderFolders(); }
     function renderParts() {
-        const list = document.getElementById('parts-list');
-        list.innerHTML = '';
-        const folder = getActiveFolder();
-        if (!folder) return;
-        if (!folder.parts || folder.parts.length === 0) {
-            list.innerHTML = '<div style="text-align:center; opacity:0.4; padding:40px 0; font-size:0.95rem;">Aucun morceau<br><span style="font-size:0.8rem">Appuyez sur + pour en ajouter</span></div>';
-            return;
-        }
-        folder.parts.forEach(part => {
-            const card = document.createElement('div');
-            card.className = 'part-card';
-            const ruleCount = part.rules ? part.rules.length : 0;
-            card.innerHTML = `
-                <div style="flex:1; cursor:pointer" onclick="openPart('${part.id}')">
-                    <div style="font-size:1.1rem; font-weight:700; margin-bottom:4px;">${part.name}</div>
-                    <div style="color:var(--text-dim); font-size:0.9rem;">Rang ${part.rows || 0} · ${ruleCount} règle${ruleCount !== 1 ? 's' : ''}</div>
-                </div>
-                <button class="btn-danger" style="width:36px; height:36px; padding:0; font-size:1rem; margin-left:10px;" onclick="deletePart('${part.id}')">🗑</button>
-            `;
-            list.appendChild(card);
+        const folder = data.find(f => f.id === activeFolderId); const list = document.getElementById('parts-list'); list.innerHTML = '';
+        if(folder.parts.length===0) list.innerHTML = '<div style="text-align:center; opacity:0.5; margin-top:40px">Ce dossier est vide. 🧶</div>';
+        folder.parts.forEach(p => {
+            const div = document.createElement('div'); div.className = 'part-card';
+            div.innerHTML = `<div><h4>${p.name}</h4><span style="font-size:0.8rem; opacity:0.7">${p.rules.length} règles</span></div><div style="display:flex; align-items:center; gap:15px"><span class="part-preview">${p.rows}</span><button class="btn-danger btn-circle" style="width:35px; height:35px" onclick="deletePart(event, '${p.id}')">🗑</button></div>`;
+            div.onclick = (e) => { if(e.target.tagName!=='BUTTON') openPart(p.id); }; list.appendChild(div);
         });
     }
-
-    // --- PART ACTIONS ---
-    function openPart(partId) {
-        activePartId = partId;
-        const folder = getActiveFolder();
-        const part = getActivePart();
-        document.getElementById('counter-folder-name').textContent = folder.name.toUpperCase();
-        document.getElementById('counter-part-name').textContent = part.name;
-        document.getElementById('counter-display').textContent = part.rows || 0;
-        showScreen('screen-counter');
-        renderSatellites();
-    }
-
     function createPart() {
-        const name = document.getElementById('input-part-name').value.trim();
-        if (!name) { showToast("Entrez un nom"); return; }
-        const folder = getActiveFolder();
-        if (!folder.parts) folder.parts = [];
-        const newPart = { id: generateId(), name, rows: 0, rules: [] };
-        folder.parts.push(newPart);
-        document.getElementById('input-part-name').value = '';
-        closeModals();
-        renderParts();
-        scheduleSave();
-        showToast(`✅ "${name}" ajouté`);
+        const name = document.getElementById('input-part-name').value.trim(); if(!name) return;
+        const folder = data.find(f => f.id === activeFolderId);
+        folder.parts.push({ id: "p_"+Date.now(), name: name, rows: 0, rules: [] });
+        scheduleSave(); renderParts(); closeModals(); document.getElementById('input-part-name').value='';
     }
-
-    function deletePart(partId) {
-        const folder = getActiveFolder();
-        const part = folder.parts.find(p => p.id === partId);
-        if (!part) return;
-        if (!confirm(`Supprimer "${part.name}" ?`)) return;
-        folder.parts = folder.parts.filter(p => p.id !== partId);
-        renderParts();
-        scheduleSave();
-        showToast("🗑 Morceau supprimé");
+    function deletePart(e, pid) {
+        e.stopPropagation(); if(!confirm("Supprimer ce compteur ?")) return;
+        const folder = data.find(f => f.id === activeFolderId); folder.parts = folder.parts.filter(p => p.id !== pid);
+        scheduleSave(); renderParts();
     }
-
-    // --- COUNTER ---
-    function increment() {
-        const part = getActivePart();
-        if (!part) return;
-        part.rows = (part.rows || 0) + 1;
+    function openPart(pid) { activePartId = pid; renderCounter(); switchScreen('screen-counter'); }
+    function goBackToFolder() { openFolder(activeFolderId); }
+    function renderCounter() {
+        const folder = data.find(f => f.id === activeFolderId); const part = folder.parts.find(p => p.id === activePartId);
+        document.getElementById('counter-folder-name').textContent = folder.name;
+        document.getElementById('counter-part-name').textContent = part.name;
         document.getElementById('counter-display').textContent = part.rows;
-        checkRules(part);
-        renderSatellites();
-        scheduleSave();
-    }
-
-    function decrement() {
-        const part = getActivePart();
-        if (!part) return;
-        if (part.rows <= 0) { showToast("Déjà à 0 !"); return; }
-        part.rows = part.rows - 1;
-        document.getElementById('counter-display').textContent = part.rows;
-        renderSatellites();
-        scheduleSave();
-    }
-
-    // --- RULES ---
-    function addRule() {
-        const type = document.getElementById('input-rule-type').value;
-        const val = parseInt(document.getElementById('input-rule-val').value);
-        const name = document.getElementById('input-rule-name').value.trim();
-        if (!val || val <= 0 || !name) { showToast("Remplissez tous les champs"); return; }
-        const part = getActivePart();
-        if (!part.rules) part.rules = [];
-        part.rules.push({ id: generateId(), type, val, name });
-        document.getElementById('input-rule-val').value = '';
-        document.getElementById('input-rule-name').value = '';
-        renderRulesPreview();
-        renderSatellites();
-        scheduleSave();
-        showToast(`✅ Règle "${name}" ajoutée`);
-    }
-
-    function deleteRule(ruleId) {
-        const part = getActivePart();
-        part.rules = part.rules.filter(r => r.id !== ruleId);
-        renderRulesPreview();
-        renderSatellites();
-        scheduleSave();
-    }
-
-    function renderRulesPreview() {
-        const container = document.getElementById('rules-list-preview');
-        container.innerHTML = '';
-        const part = getActivePart();
-        if (!part || !part.rules || part.rules.length === 0) {
-            container.innerHTML = '<div style="opacity:0.4; font-size:0.85rem; text-align:center; padding:10px">Aucune règle</div>';
-            return;
-        }
-        part.rules.forEach(rule => {
-            const row = document.createElement('div');
-            row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);';
-            const typeLabel = rule.type === 'modulo' ? `tous les ${rule.val} rangs` : `au rang ${rule.val}`;
-            row.innerHTML = `
-                <div>
-                    <div style="font-weight:600; font-size:0.9rem;">${rule.name}</div>
-                    <div style="opacity:0.5; font-size:0.8rem;">${typeLabel}</div>
-                </div>
-                <button class="btn-danger" style="width:30px; height:30px; padding:0; font-size:0.8rem;" onclick="deleteRule('${rule.id}')">✕</button>
-            `;
-            container.appendChild(row);
-        });
-    }
-
-    function checkRules(part) {
-        if (!part.rules || part.rules.length === 0) return;
-        part.rules.forEach(rule => {
-            let triggered = false;
-            if (rule.type === 'modulo' && part.rows % rule.val === 0) triggered = true;
-            if (rule.type === 'target' && part.rows === rule.val) triggered = true;
-            if (triggered) triggerAlert(rule.name);
-        });
-    }
-
-    function triggerAlert(message) {
-        const flash = document.getElementById('flash-alert');
-        document.getElementById('flash-message').textContent = message;
-        flash.style.display = 'flex';
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-    }
-
-    // --- SATELLITES RENDER ---
-    function renderSatellites() {
-        const area = document.getElementById('satellites-area');
-        area.innerHTML = '';
-        const part = getActivePart();
-        if (!part || !part.rules || part.rules.length === 0) return;
-        
-        part.rules.forEach(rule => {
-            const row = document.createElement('div');
-            row.className = 'satellite-row';
-            
-            let progress = 0;
-            let leftText = rule.name;
-            let rightText = '';
-            let isAlert = false;
-
-            if (rule.type === 'modulo') {
-                const current = part.rows % rule.val;
-                const remaining = current === 0 && part.rows > 0 ? 0 : rule.val - current;
-                progress = (current / rule.val) * 100;
-                isAlert = remaining === 0;
-                rightText = isAlert ? '✨ Maintenant !' : `dans ${remaining} rang${remaining > 1 ? 's' : ''}`;
-                if (isAlert) progress = 100;
-            } else if (rule.type === 'target') {
-                const done = part.rows >= rule.val;
-                progress = done ? 100 : (part.rows / rule.val) * 100;
-                isAlert = part.rows === rule.val;
-                rightText = done ? '✅ Fait' : `rang ${rule.val}`;
+        const area = document.getElementById('satellites-area'); area.innerHTML = '';
+        part.rules.forEach(r => {
+            let pct=0, txt="", isAlert=false;
+            if(r.type==='modulo') {
+                const mod = part.rows % r.val; pct = (mod===0 && part.rows>0) ? 100 : (mod/r.val*100); if(part.rows===0) pct=0;
+                txt = (mod===0 && part.rows>0) ? "ACTION !" : `${mod}/${r.val}`; if(mod===0 && part.rows>0) isAlert=true;
+            } else {
+                pct = Math.min(100, (part.rows/r.val*100)); const rem = r.val - part.rows;
+                txt = rem<=0 ? "FINI" : `Reste: ${rem}`; if(rem<=0) isAlert=true;
             }
-
-            row.innerHTML = `
-                <div class="progress-bar-bg ${isAlert ? 'alert' : ''}" style="width:${progress}%"></div>
-                <div class="satellite-content">
-                    <span>${leftText}</span>
-                    <span>${rightText}</span>
-                </div>
-            `;
-            area.appendChild(row);
+            const div = document.createElement('div'); div.className = 'satellite-row';
+            div.innerHTML = `<div class="progress-bar-bg ${isAlert?'alert':''}" style="width:${pct}%"></div><div class="satellite-content"><span>${r.name}</span><span>${txt}</span></div>`;
+            area.appendChild(div);
         });
     }
-
-    // --- DUPLICATION ---
+    function increment() {
+        const folder = data.find(f => f.id === activeFolderId); const part = folder.parts.find(p => p.id === activePartId);
+        part.rows++; renderCounter(); scheduleSave();
+        let alerts = []; part.rules.forEach(r => {
+            if(r.type==='modulo' && part.rows>0 && part.rows%r.val===0) alerts.push(r.name);
+            if(r.type==='target' && part.rows===r.val) alerts.push("Fin: "+r.name);
+        });
+        if(alerts.length>0) {
+            document.getElementById('flash-message').innerHTML = alerts.join('<br>+<br>');
+            document.getElementById('flash-alert').style.display='flex'; vibrate([300,100,300]);
+        } else vibrate(50);
+    }
+    function decrement() {
+        const folder = data.find(f => f.id === activeFolderId); const part = folder.parts.find(p => p.id === activePartId);
+        if(part.rows>0) { part.rows--; renderCounter(); scheduleSave(); }
+    }
     function openDuplicateModal() {
-        const part = getActivePart();
-        if (!part) return;
-        const suggestedName = part.name.includes('Gauche') 
-            ? part.name.replace('Gauche', 'Droit') 
-            : part.name.includes('Droit') 
-            ? part.name.replace('Droit', 'Gauche') 
-            : part.name + ' (copie)';
-        document.getElementById('input-duplicate-name').value = suggestedName;
-        openModal('modal-duplicate-part');
+        const folder = data.find(f => f.id === activeFolderId); const part = folder.parts.find(p => p.id === activePartId);
+        document.getElementById('input-duplicate-name').value = part.name + " (Suite)"; openModal('modal-duplicate-part');
     }
-
     function executeDuplication() {
-        const newName = document.getElementById('input-duplicate-name').value.trim();
-        if (!newName) { showToast("Entrez un nom"); return; }
-        const part = getActivePart();
-        const folder = getActiveFolder();
-        const newPart = {
-            id: generateId(),
-            name: newName,
-            rows: 0,
-            rules: part.rules ? part.rules.map(r => ({ ...r, id: generateId() })) : []
-        };
-        folder.parts.push(newPart);
-        closeModals();
-        renderParts();
-        scheduleSave();
-        showToast(`👯 "${newName}" créé avec ${newPart.rules.length} règle${newPart.rules.length !== 1 ? 's' : ''}`);
+        const name = document.getElementById('input-duplicate-name').value.trim(); if(!name) return;
+        const folder = data.find(f => f.id === activeFolderId); const oldPart = folder.parts.find(p => p.id === activePartId);
+        folder.parts.push({ id: "p_"+Date.now(), name: name, rows: 0, rules: JSON.parse(JSON.stringify(oldPart.rules)) });
+        scheduleSave(); showToast("Symétrie créée !"); closeModals(); goBackToFolder();
+    }
+    function renderRulesList() {
+        const folder = data.find(f => f.id === activeFolderId); const part = folder.parts.find(p => p.id === activePartId);
+        const list = document.getElementById('rules-list-preview'); list.innerHTML = '';
+        part.rules.forEach((r, idx) => {
+            const d = document.createElement('div'); d.style.display='flex'; d.style.justifyContent='space-between'; d.style.padding='5px 0';
+            d.innerHTML = `<span>${r.name} (${r.val})</span><span style="color:var(--alert); cursor:pointer" onclick="removeRule(${idx})">✕</span>`; list.appendChild(d);
+        });
+    }
+    function addRule() {
+        const type = document.getElementById('input-rule-type').value; const val = parseInt(document.getElementById('input-rule-val').value);
+        const name = document.getElementById('input-rule-name').value; if(!val||!name) return;
+        const folder = data.find(f => f.id === activeFolderId); const part = folder.parts.find(p => p.id === activePartId);
+        part.rules.push({type,val,name}); renderRulesList(); renderCounter(); scheduleSave();
+        document.getElementById('input-rule-val').value='';
+    }
+    function removeRule(idx) {
+        const folder = data.find(f => f.id === activeFolderId); const part = folder.parts.find(p => p.id === activePartId);
+        part.rules.splice(idx,1); renderRulesList(); renderCounter(); scheduleSave();
     }
 
-    // --- INIT ---
-    document.addEventListener('DOMContentLoaded', fetchData);
-
-    // Fermer les modals en cliquant sur l'overlay
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-        overlay.addEventListener('click', function(e) {
-            if (e.target === this) closeModals();
-        });
-    });
-
-    // Valider avec Enter dans les inputs
-    document.getElementById('input-folder-name').addEventListener('keydown', e => { if (e.key === 'Enter') createFolder(); });
-    document.getElementById('input-part-name').addEventListener('keydown', e => { if (e.key === 'Enter') createPart(); });
+    fetchData(); 
 </script>
 </body>
 </html>
