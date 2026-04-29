@@ -1,4 +1,5 @@
-```html
+Est ce que mon app marche hors ligne?
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -324,28 +325,11 @@
     // --- CONFIGURATION ---
     const API_URL = "https://script.google.com/macros/s/AKfycbwO5NXC4tNO2oHi-q_zawF9kNu1b1TOym2jU4ifp6KK9T0rnR2AW2ivk0BR6KGVKSoT/exec";
 
-    let data = []; 
-    let activeFolderId = null; 
-    let activePartId = null; 
-    let saveTimeout = null;
+    let data = []; let activeFolderId = null; let activePartId = null; let saveTimeout = null;
 
     function setSyncStatus(status) { document.getElementById('sync-status').className = status; }
 
-    // --- AJOUT : FONCTIONS DE SAUVEGARDE LOCALE ---
-    function saveLocally() {
-        localStorage.setItem("tricotDataLocal", JSON.stringify(data));
-    }
-
-    function loadLocally() {
-        const localData = localStorage.getItem("tricotDataLocal");
-        if (localData) {
-            data = JSON.parse(localData);
-            renderFolders();
-        }
-    }
-    // ----------------------------------------------
-
-    // --- ENGINE ROBUSTE (Identique à ton code, avec la fin complétée) ---
+    // --- ENGINE ROBUSTE ---
     async function fetchData() {
         setSyncStatus('syncing');
         const loadMsg = document.getElementById('loading-msg');
@@ -354,9 +338,6 @@
         loadMsg.style.display = 'block';
         errBox.style.display = 'none';
 
-        // AJOUT: On charge immédiatement les données locales en attendant la réponse
-        loadLocally();
-
         try {
             const urlWithCacheBust = API_URL + "?t=" + new Date().getTime();
             const res = await fetch(urlWithCacheBust);
@@ -364,15 +345,19 @@
             const text = await res.text();
             try {
                 const json = JSON.parse(text);
-                // Si le serveur a bien des données on met à jour, sinon on garde le local
-                if (json && json.length > 0) {
-                    data = json; 
-                    saveLocally(); // On met à jour le stockage local avec ce qu'on vient de télécharger
-                }
+                data = json; 
                 setSyncStatus('synced');
                 loadMsg.style.display = 'none';
                 renderFolders();
             } catch (jsonError) {
                 console.error("Reçu du HTML au lieu de JSON:", text.substring(0, 100));
                 throw new Error("PERMISSION_DENIED");
- 
+            }
+        } catch (e) {
+            console.error(e); setSyncStatus('error');
+            loadMsg.style.display = 'none'; errBox.style.display = 'block';
+            if (e.message === "PERMISSION_DENIED" || e.message.includes("Unexpected token")) {
+                document.getElementById('error-title').textContent = "🔒 Accès Refusé";
+                document.getElementById('error-desc').innerHTML = "Le script Google doit être accessible à <b>'Tout le monde'</b>.";
+
+} else {
