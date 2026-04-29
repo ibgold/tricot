@@ -553,7 +553,7 @@
             card.innerHTML = `
                 <div style="flex:1; cursor:pointer" onclick="openPart('${part.id}')">
                     <div style="font-size:1.1rem; font-weight:700; margin-bottom:4px;">${part.name}</div>
-                    <div style="color:var(--text-dim); font-size:0.9rem;">Rang ${part.count || 0} · ${ruleCount} règle${ruleCount !== 1 ? 's' : ''}</div>
+                    <div style="color:var(--text-dim); font-size:0.9rem;">Rang ${part.rows || 0} · ${ruleCount} règle${ruleCount !== 1 ? 's' : ''}</div>
                 </div>
                 <button class="btn-danger" style="width:36px; height:36px; padding:0; font-size:1rem; margin-left:10px;" onclick="deletePart('${part.id}')">🗑</button>
             `;
@@ -568,7 +568,7 @@
         const part = getActivePart();
         document.getElementById('counter-folder-name').textContent = folder.name.toUpperCase();
         document.getElementById('counter-part-name').textContent = part.name;
-        document.getElementById('counter-display').textContent = part.count || 0;
+        document.getElementById('counter-display').textContent = part.rows || 0;
         showScreen('screen-counter');
         renderSatellites();
     }
@@ -578,7 +578,7 @@
         if (!name) { showToast("Entrez un nom"); return; }
         const folder = getActiveFolder();
         if (!folder.parts) folder.parts = [];
-        const newPart = { id: generateId(), name, count: 0, rules: [] };
+        const newPart = { id: generateId(), name, rows: 0, rules: [] };
         folder.parts.push(newPart);
         document.getElementById('input-part-name').value = '';
         closeModals();
@@ -602,8 +602,8 @@
     function increment() {
         const part = getActivePart();
         if (!part) return;
-        part.count = (part.count || 0) + 1;
-        document.getElementById('counter-display').textContent = part.count;
+        part.rows = (part.rows || 0) + 1;
+        document.getElementById('counter-display').textContent = part.rows;
         checkRules(part);
         renderSatellites();
         scheduleSave();
@@ -612,9 +612,9 @@
     function decrement() {
         const part = getActivePart();
         if (!part) return;
-        if (part.count <= 0) { showToast("Déjà à 0 !"); return; }
-        part.count = part.count - 1;
-        document.getElementById('counter-display').textContent = part.count;
+        if (part.rows <= 0) { showToast("Déjà à 0 !"); return; }
+        part.rows = part.rows - 1;
+        document.getElementById('counter-display').textContent = part.rows;
         renderSatellites();
         scheduleSave();
     }
@@ -671,8 +671,8 @@
         if (!part.rules || part.rules.length === 0) return;
         part.rules.forEach(rule => {
             let triggered = false;
-            if (rule.type === 'modulo' && part.count % rule.val === 0) triggered = true;
-            if (rule.type === 'target' && part.count === rule.val) triggered = true;
+            if (rule.type === 'modulo' && part.rows % rule.val === 0) triggered = true;
+            if (rule.type === 'target' && part.rows === rule.val) triggered = true;
             if (triggered) triggerAlert(rule.name);
         });
     }
@@ -701,16 +701,16 @@
             let isAlert = false;
 
             if (rule.type === 'modulo') {
-                const current = part.count % rule.val;
-                const remaining = current === 0 && part.count > 0 ? 0 : rule.val - current;
+                const current = part.rows % rule.val;
+                const remaining = current === 0 && part.rows > 0 ? 0 : rule.val - current;
                 progress = (current / rule.val) * 100;
                 isAlert = remaining === 0;
                 rightText = isAlert ? '✨ Maintenant !' : `dans ${remaining} rang${remaining > 1 ? 's' : ''}`;
                 if (isAlert) progress = 100;
             } else if (rule.type === 'target') {
-                const done = part.count >= rule.val;
-                progress = done ? 100 : (part.count / rule.val) * 100;
-                isAlert = part.count === rule.val;
+                const done = part.rows >= rule.val;
+                progress = done ? 100 : (part.rows / rule.val) * 100;
+                isAlert = part.rows === rule.val;
                 rightText = done ? '✅ Fait' : `rang ${rule.val}`;
             }
 
@@ -746,7 +746,7 @@
         const newPart = {
             id: generateId(),
             name: newName,
-            count: 0,
+            rows: 0,
             rules: part.rules ? part.rules.map(r => ({ ...r, id: generateId() })) : []
         };
         folder.parts.push(newPart);
