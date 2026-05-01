@@ -32,7 +32,7 @@
             /* COULEURS DES BARRES */
             --bar-fill: linear-gradient(90deg, #8E2DE2, #4A00E0); /* Violet profond */
             
-            /* LE VRAI DORÉ (Fini le jaune pisse !) */
+            /* LE VRAI DORÉ */
             --bar-action: linear-gradient(135deg, #d4af37 0%, #edc967 50%, #d4af37 100%); /* Or Métallique */
             --gold-glow: rgba(212, 175, 55, 0.5);
         }
@@ -84,11 +84,10 @@
         .btn-secondary { 
             background: var(--glass); border: 1px solid var(--glass-border); color: var(--primary); padding: 12px 16px; 
         }
-        /* Nouveau bouton neutre pour la correction */
         .btn-neutral { 
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-dim); padding: 12px; 
         }
-        .btn-danger { /* Gardé pour la suppression de projet uniquement */
+        .btn-danger { 
             background: rgba(207, 102, 121, 0.15); border: 1px solid rgba(207, 102, 121, 0.3); color: var(--alert); padding: 12px; 
         }
         
@@ -147,13 +146,11 @@
             border: 1px solid var(--glass-border);
             flex-shrink: 0;
         }
-        /* CHANGEMENT : Barres violettes douces par défaut */
         .progress-bar-bg { 
             position: absolute; top: 0; bottom: 0; left: 0; 
             background: var(--bar-fill); 
             opacity: 0.4; z-index: 0; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
         }
-        /* CHANGEMENT : Barres dorées effet luxe pour l'alerte */
         .progress-bar-bg.alert { 
             background: var(--bar-action); 
             opacity: 0.9; 
@@ -175,7 +172,6 @@
             z-index: 9999; transition: all 0.3s; 
             box-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
-        /* Indicateur de statut avec le même doré */
         #sync-status.syncing { background: #D4AF37; box-shadow: 0 0 10px #D4AF37; border-color: #fff; animation: pulse 1s infinite; }
         #sync-status.synced { background: #27ae60; box-shadow: 0 0 10px #27ae60; border-color: #fff; }
         #sync-status.error { background: #eb5757; border-color: white; }
@@ -215,24 +211,21 @@
         
         #flash-alert { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-            /* UTILISATION DU VIOLET SOMBRE DEMANDE: #4a006a */
-            background: linear-gradient(135deg, #4a006a, #2a0040); 
+            background: linear-gradient(135deg, #4a006a, #2a0040); /* VIOLET SOMBRE */
             backdrop-filter: blur(5px);
             color: white; 
             display: none; flex-direction: column; 
             justify-content: center; align-items: center; z-index: 2000; text-align: center; padding: 30px; 
         }
         #flash-message { font-size: 3rem; font-weight: 800; margin-bottom: 40px; line-height: 1.2; }
-        
-        /* Style du bouton dans l'alerte pour qu'il ressorte sur le violet foncé */
         #flash-btn { 
-            background: rgba(255,255,255,0.2); /* Verre givré blanc */
+            background: rgba(255,255,255,0.2); 
             color: white; 
             border: 1px solid rgba(255,255,255,0.4);
             padding: 20px 50px; border-radius: 40px; font-size: 1.2rem;
             backdrop-filter: blur(10px);
         }
-
+        
         /* Loading Skeleton */
         .skeleton {
             background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
@@ -265,7 +258,7 @@
         <div id="error-box" style="display:none; background: rgba(207, 102, 121, 0.1); border: 1px solid var(--alert); padding: 20px; border-radius: var(--radius-md); text-align: center;">
             <strong id="error-title" style="color:var(--alert); font-size: 1.1rem;">Erreur</strong><br>
             <span id="error-desc" style="color:white; font-size: 0.9rem; display:block; margin: 10px 0;">Description</span>
-            <button class="btn-secondary" onclick="fetchData()" style="width:100%; margin-top:10px;">Réessayer</button>
+            <button class="btn-secondary" onclick="initData()" style="width:100%; margin-top:10px;">Réessayer</button>
         </div>
         
         <div id="folders-list" class="scroll-area"></div>
@@ -300,7 +293,6 @@
         <div id="satellites-area"></div>
         
         <div style="display: flex; gap: 15px; margin-top: 20px; flex-shrink: 0;">
-            <!-- Changement ici : Bouton Neutre (Gomme) au lieu de Danger -->
             <button class="btn-neutral" style="flex:1" onclick="decrement()">-1 (Correction)</button>
             <button class="btn-secondary" style="flex:1" onclick="openDuplicateModal()">👯 Symétrie</button>
         </div>
@@ -327,51 +319,89 @@
 
     function setSyncStatus(status) { document.getElementById('sync-status').className = status; }
 
-    // --- ENGINE ROBUSTE ---
-    async function fetchData() {
+    // --- ENGINE ROBUSTE (OFFLINE FIRST) ---
+    async function initData() {
         setSyncStatus('syncing');
         const loadMsg = document.getElementById('loading-msg');
         const errBox = document.getElementById('error-box');
-        
-        loadMsg.style.display = 'block';
         errBox.style.display = 'none';
 
-        try {
-            const urlWithCacheBust = API_URL + "?t=" + new Date().getTime();
-            const res = await fetch(urlWithCacheBust);
-            if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
-            const text = await res.text();
+        // 1. Charger depuis le cache local d'abord (Mode Hors Ligne)
+        const localData = localStorage.getItem('tricotData');
+        if (localData) {
             try {
-                const json = JSON.parse(text);
-                data = json; 
-                setSyncStatus('synced');
-                loadMsg.style.display = 'none';
+                data = JSON.parse(localData);
                 renderFolders();
-            } catch (jsonError) {
-                console.error("Reçu du HTML au lieu de JSON:", text.substring(0, 100));
-                throw new Error("PERMISSION_DENIED");
+                loadMsg.style.display = 'none';
+            } catch(e) { console.error(e); }
+        } else {
+            loadMsg.style.display = 'block';
+        }
+
+        // 2. Synchro avec Google Sheets
+        try {
+            if (localStorage.getItem('needsSync') === 'true' && data.length > 0) {
+                // Pousser les données locales vers le cloud
+                await fetch(API_URL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    headers: {'Content-Type': 'text/plain'}, 
+                    body: JSON.stringify(data) 
+                });
+                localStorage.setItem('needsSync', 'false');
+                setSyncStatus('synced');
+            } else {
+                // Récupérer les données du cloud
+                const res = await fetch(API_URL + "?t=" + new Date().getTime());
+                if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
+                const text = await res.text();
+                try {
+                    const json = JSON.parse(text);
+                    data = json; 
+                    localStorage.setItem('tricotData', JSON.stringify(data)); // Maj du cache
+                    setSyncStatus('synced');
+                    loadMsg.style.display = 'none';
+                    renderFolders();
+                } catch (jsonError) {
+                    throw new Error("PERMISSION_DENIED");
+                }
             }
         } catch (e) {
-            console.error(e); setSyncStatus('error');
-            loadMsg.style.display = 'none'; errBox.style.display = 'block';
-            if (e.message === "PERMISSION_DENIED" || e.message.includes("Unexpected token")) {
-                document.getElementById('error-title').textContent = "🔒 Accès Refusé";
-                document.getElementById('error-desc').innerHTML = "Le script Google doit être accessible à <b>'Tout le monde'</b>.";
+            console.error(e); 
+            setSyncStatus('error');
+            loadMsg.style.display = 'none'; 
+            
+            if (!localData) {
+                // Rien en local et pas d'internet = Blocage
+                errBox.style.display = 'block';
+                if (e.message === "PERMISSION_DENIED" || e.message.includes("Unexpected token")) {
+                    document.getElementById('error-title').textContent = "🔒 Accès Refusé";
+                    document.getElementById('error-desc').innerHTML = "Le script Google doit être accessible à <b>'Tout le monde'</b>.";
+                } else {
+                    document.getElementById('error-title').textContent = "📡 Erreur Connexion";
+                    document.getElementById('error-desc').textContent = "Aucune donnée locale et pas d'internet.";
+                }
             } else {
-                document.getElementById('error-title').textContent = "📡 Erreur Connexion";
-                document.getElementById('error-desc').textContent = "Vérifiez votre internet.";
+                showToast("☁️ Mode hors ligne (Sauvegarde locale active)");
             }
         }
     }
 
     function scheduleSave() {
+        // SAUVEGARDE LOCALE IMMEDIATE
+        localStorage.setItem('tricotData', JSON.stringify(data));
+        localStorage.setItem('needsSync', 'true');
+
         setSyncStatus('syncing');
         if (saveTimeout) clearTimeout(saveTimeout);
         saveTimeout = setTimeout(async () => {
             try {
                 await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(data) });
+                localStorage.setItem('needsSync', 'false');
                 setSyncStatus('synced');
-            } catch (e) { setSyncStatus('error'); }
+            } catch (e) { 
+                setSyncStatus('error'); 
+            }
         }, 1500);
     }
 
@@ -490,7 +520,8 @@
         part.rules.splice(idx,1); renderRulesList(); renderCounter(); scheduleSave();
     }
 
-    fetchData(); 
+    // Lancement de l'application
+    initData(); 
 </script>
 </body>
 </html>
